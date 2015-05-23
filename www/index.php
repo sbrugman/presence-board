@@ -1,6 +1,7 @@
 <?php
 include 'functions.php';
 $interval = 5 * 60;
+$threshold = 2;
 
 $data = load_data();
 
@@ -30,12 +31,12 @@ $map_data = get_data('map_data');
 	<?php
 	foreach($entries as $key => $points)
 	{
-	    foreach($points as $point)
+	    if(count($points) >= $threshold)
 	    {
-	        if(isset($point['value']) && $point['value'] > 0)
-		{
-	   	    echo "['".map($key, $map_data)."',new Date(".date('Y,n,j,G,i',$point['start'])."), new Date(".date('Y,n,j,G,i',$point['end']).")],";
-		}
+	    	foreach($points as $point)
+	    	{
+	            echo "['".map($key, $map_data)."',new Date(".date('Y,n,j,G,i',$point['start'])."), new Date(".date('Y,n,j,G,i',$point['end']).")],\n";
+	    	}
 	    }
 	} 
 	?>

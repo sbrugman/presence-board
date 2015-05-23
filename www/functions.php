@@ -54,7 +54,7 @@ function process_into_points($active)
 	{
 		if($prevValue == -1 || (($value >= 1 && $prevValue == 0) || ($value == 0 && $prevValue == 1)))
 		{
-			if($start != -1)
+			if($start != -1 && $prevValue == 1)
 			{
 				$points[] = array('start' => $start, 'end' => $name, 'value' => $prevValue);
 			}
@@ -63,7 +63,10 @@ function process_into_points($active)
 		$prevValue = ($value >= 1) ? 1 : 0;
 	}
 
-	$points[] = array('start' => $start, 'end' => $name, 'value' => $prevValue);
+	if($prevValue == 1)
+	{
+		$points[] = array('start' => $start, 'end' => $name, 'value' => $prevValue);
+	}
 	return $points;
 }
 
