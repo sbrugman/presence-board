@@ -19,7 +19,7 @@ def send_data(entries):
     for key, value in entries.iteritems():
         payload[key] = {'mac':value.mac,'ssid':value.ssid,'datetime':value.timeLastSeen}
 
-    url = 'http://localhost/presence-board/api.php?action=dump'
+    url = 'http://localhost/hoover/api.php?action=dump'
     headers = {'Content-Type': 'application/json'}
     r = requests.post(url, data=json.dumps(payload), headers=headers)
     return {}
@@ -37,14 +37,14 @@ class switchChannelThread (threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
-    	self.maxChannel = 12
+	self.channels = [1,2,3,4,5,6,7,8,9,10,11,12]
         self.delayInSeconds = delayInSeconds
         self.running = True
     def run(self):
 	if verbose:        
 	    print 'Starting switch channel thread using a dely of %d seconds' % self.delayInSeconds
         while self.running:
-            for channel in range (1, self.maxChannel + 1):
+            for channel in self.channels:
                 if verbose: 
                     print 'Switching to channel %d' % (channel)
                 if subprocess.call([iwconfigPath, interface, "channel", str(channel)]) != 0:
@@ -133,7 +133,10 @@ i = 0
 for line in iter(popen.stdout.readline, ''):
     line = line.rstrip()
     if line.find(',') > 0:
-        mac, ssid, frame_time = line.split(',', 2)
+        mac, rest = line.split(',', 1)
+	rest = rest.split(',')	
+	frame_time = ",".join(reversed([rest.pop(),rest.pop()]))
+	ssid = ",".join(rest)
 	time_str = datetime.datetime.strptime(frame_time[:-10], "%b %d, %Y %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
 	if not (mac + time_str) in entries:
 	    if verbose:
