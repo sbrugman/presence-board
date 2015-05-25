@@ -93,6 +93,22 @@ function load_data()
 	return $data;
 }
 
+function load_ssid()
+{
+	$raw_data = get_data('data');
+	$data = array();
+	foreach($raw_data as $value)
+	{
+		if($value[0] != null && mb_strlen($value[1]) > 0 && (!isset($data[$value[0]]) || !in_array($value[1], $data[$value[0]])))
+		{
+			$data[$value[0]][] = ($value[1]);
+		}
+	}
+
+	return $data;
+
+}
+
 $unknown = array();
 function map($key, $map_data)
 {
@@ -110,4 +126,46 @@ function map($key, $map_data)
 		
 		return 'Onbekend apparaat ('.(array_search($key, $unknown)+1).')';
 	}
+}
+
+function load_oui()
+{
+	if(!file_exists('data/oui.json'))
+	{
+		if(!file_exists('data/oui.txt'))
+		{
+			file_put_contents('data/oui.txt',file_get_contents("http://standards-oui.ieee.org/oui.txt"));
+		}
+		$map = array();
+		$lines = file('data/oui.txt');
+		$i = 0;
+		foreach($lines as $line)
+		{
+			$line = trim($line);
+			$line = str_replace(array("\n","\t","\r")," ",$line);
+			while(strpos($line, '  ') !== false)
+			{
+				$line = str_replace("  "," ",$line);
+			}
+			if(substr($line,7,9) == '(base 16)')
+			{
+				$map[substr($line,0,6)] = substr($line,17);
+			}
+
+		}
+
+		set_data('oui',$map);
+		return $map;
+	}
+	else
+	{
+		return get_data('oui');
+	}
+}
+
+function resolve_mac($addr, $oui)
+{
+	$addr = strtoupper($addr);
+	$addr = str_replace(":","",$addr);
+	return $oui->{substr($addr,0,6)};
 }

@@ -1,9 +1,11 @@
 <?php
 include 'functions.php';
 $interval = 5 * 60;
-$threshold = 2;
+$threshold = 3;
 
 $data = load_data();
+$ssid = load_ssid();
+$oui = load_oui();
 
 $entries = array();
 foreach($data as $key => $data_mac)
@@ -82,11 +84,21 @@ $map_data = get_data('map_data');
 		<?php
 		foreach($map_data as $device => $name)
 		{
-		    echo '<tr><td><a href="http://www.coffer.com/mac_find/?string='.urlencode($device).'">'.$device.'</a></td><td><input class="form-control" name="'.$device.'" type="text" value="'.$name.'" /></td></tr>';
+		    echo '<tr>';
+			echo '<td>'.$device.'</td>';
+			echo '<td><input class="form-control" name="'.$device.'" type="text" value="'.$name.'" /></td>';
+		    	echo '<td>'.(isset($ssid[$device]) ? implode(", ",$ssid[$device]) : '').'</td>';
+		    	echo '<td>'.resolve_mac($device, $oui).'</td>';
+		    echo '</tr>';
 		}
 		foreach($unknown as $device)
 		{
-		    echo '<tr><td><a href="http://www.coffer.com/mac_find/?string='.urlencode($device).'">'.$device.'</a></td><td><input class="form-control" name="'.$device.'" type="text" /></td></tr>';
+		    echo '<tr>';
+			echo '<td>'.$device.'</td>';
+			echo '<td><input class="form-control" name="'.$device.'" type="text" value="" /></td>';
+		    	echo '<td>'.(isset($ssid[$device]) ? implode(", ",$ssid[$device]) : '').'</td>';
+		    	echo '<td>'.resolve_mac($device, $oui).'</td>';
+		    echo '</tr>';
 		}
 		?>
 	     </table>
