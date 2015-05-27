@@ -1,19 +1,47 @@
 <?php
 include 'functions.php';
-$interval = 5 * 60;
-$threshold = 3;
+$interval = 10 * 60;
+$threshold = 10;
 
 $data = load_data();
 $ssid = load_ssid();
 $oui = load_oui();
+$map_data = get_data('map_data');
 
+$total = array();
 $entries = array();
+
+$changed = false;
+
+/*
+foreach($map_data as $key => $data_mac)
+{
+	if(!is_object($map_data->$key))
+	{
+		$map_data->$key = new stdclass();
+		$map_data->$key->name = $key;
+		$map_data->$key->vendor = resolve_mac($key, $oui);
+		$changed = true;
+	}
+}*/
 foreach($data as $key => $data_mac)
 {
-	$entries[$key] = (process_data($data_mac, $interval, $key));
+	$processed = (process_data($data_mac, $interval, $key));
+	$entries[$key] = $processed['points'];
+	$total[$key] = $processed['total'];
+	if(!isset($map_data->$key))
+	{
+		$map_data->$key = new stdclass();
+		$map_data->$key->name = $key;
+		$map_data->$key->vendor = resolve_mac($key, $oui);
+		$changed = true;
+	}
 }
 
-$map_data = get_data('map_data');
+if($changed)
+{
+	set_data('map_data',$map_data);
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -33,11 +61,11 @@ $map_data = get_data('map_data');
 	<?php
 	foreach($entries as $key => $points)
 	{
-	    if(count($points) >= $threshold)
+	    if($total[$key] >= $threshold)
 	    {
 	    	foreach($points as $point)
 	    	{
-	            echo "['".map($key, $map_data)."',new Date(".date('Y,n,j,G,i',$point['start'])."), new Date(".date('Y,n,j,G,i',$point['end']).")],\n";
+	            echo "['".($map_data->$key->name)."',new Date(".date('Y,n,j,G,i',$point['start'])."), new Date(".date('Y,n,j,G,i',$point['end']).")],\n";
 	    	}
 	    }
 	} 
@@ -82,23 +110,14 @@ $map_data = get_data('map_data');
 	    <h2>Apparaten</h2>
 	      <table class="table">
 		<?php
-		foreach($map_data as $device => $name)
+		foreach($map_data as $device => $object)
 		{
 		    echo '<tr>';
 			echo '<td>'.$device.'</td>';
-			echo '<td><input class="form-control" name="'.$device.'" type="text" value="'.$name.'" /></td>';
+			echo '<td><input class="form-control" name="'.$device.'" type="text" value="'.$object->name.'" /></td>';
 		    	echo '<td>'.(isset($ssid[$device]) ? implode(", ",$ssid[$device]) : '').'</td>';
-		    	echo '<td>'.resolve_mac($device, $oui).'</td>';
-		    echo '</tr>';
-		}
-		foreach($unknown as $device)
-		{
-		    echo '<tr>';
-			echo '<td>'.$device.'</td>';
-			echo '<td><input class="form-control" name="'.$device.'" type="text" value="" /></td>';
-		    	echo '<td>'.(isset($ssid[$device]) ? implode(", ",$ssid[$device]) : '').'</td>';
-		    	echo '<td>'.resolve_mac($device, $oui).'</td>';
-		    echo '</tr>';
+		    	echo '<td>'.$object->vendor.'</td>';
+		    echo '</tr>'."\n";
 		}
 		?>
 	     </table>

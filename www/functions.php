@@ -73,9 +73,9 @@ function process_into_points($active)
 function process_data($data, $seconds_interval = 300)
 {
 	$active = process_into_interval($data, $seconds_interval);
-
+	$total = count(array_filter($active,function($value){return ($value > 0);}));
 	$points = process_into_points($active);
-	return $points;
+	return array('points' => $points,'total' => $total);
 }
 
 function load_data()
@@ -124,7 +124,7 @@ function map($key, $map_data)
 			$unknown[] = $key;
 		}	
 		
-		return 'Onbekend apparaat ('.(array_search($key, $unknown)+1).')';
+		return $key;
 	}
 }
 
@@ -167,5 +167,12 @@ function resolve_mac($addr, $oui)
 {
 	$addr = strtoupper($addr);
 	$addr = str_replace(":","",$addr);
-	return $oui->{substr($addr,0,6)};
+	if(isset($oui->{substr($addr,0,6)}))
+	{
+		return $oui->{substr($addr,0,6)};
+	}
+	else
+	{
+		return 'Unknown';
+	}
 }

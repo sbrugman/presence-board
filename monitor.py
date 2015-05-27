@@ -37,7 +37,7 @@ class switchChannelThread (threading.Thread):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.name = name
-	self.channels = [1,2,3,4,5,6,7,8,9,10,11,12]
+	self.channels = [1,7,2,8,3,9,4,10,5,11,6,12]
         self.delayInSeconds = delayInSeconds
         self.running = True
     def run(self):

@@ -16,7 +16,7 @@ if($_GET['action'] == 'dump')
 if($_GET['action'] == 'map')
 {
 	$data_start = get_data('map_data');
-	$data_start->$_POST['mac'] = $_POST['val'];
+	$data_start->$_POST['mac']->name = $_POST['val'];
 
 	set_data('map_data',$data_start);
 }
